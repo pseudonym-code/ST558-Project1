@@ -398,7 +398,7 @@ g + geom_histogram(binwidth = 10,color="black",fill="lightblue") +
   labs(x = "Seasons in the NHL",title = "Histogram of the Number of Seasons in the NHL")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ### Goal Differentials
 
@@ -489,7 +489,7 @@ g1 + geom_point(aes(color=division)) +
        title = "Comparing Win Percentages")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ### Goals by Division
 
@@ -541,7 +541,7 @@ g2 + geom_boxplot(outlier.colour="red") +
        title = "Historic Goals per Game by Division")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 The historic data has a wide IQR in the West and very slim IQR in the
 East. There appear to be outliers in the East division though. The
@@ -556,7 +556,7 @@ g3 + geom_boxplot(outlier.colour="red") +
        title = "Current Goals per Game by Division")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ### Number of teams per Division
 
@@ -592,36 +592,36 @@ a bar plot, followed by a scatter plot to explore this.
 
 ``` r
 # Bar chart for goals, subsetting data first
-bar_data <- finalData %>% 
+barData <- finalData %>% 
   select(teamAbbrev, goalsFor, goalsAgainst, seasonsInLeague) %>% 
   arrange(desc(goalsFor))
-g4 <- ggplot(bar_data,aes(x = reorder(teamAbbrev, -goalsFor), y = goalsFor))
+g4 <- ggplot(barData,aes(x = reorder(teamAbbrev, -goalsFor), y = goalsFor))
 g4 + geom_bar(stat="identity", color = "black", fill = "lightblue") +
   theme(axis.text.x = element_text(angle=90,hjust=1,vjust=0.5)) +
   labs(x = "Team", y = "Total Franchise Goals", title = "Total Franchise Goals by Team")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 #### Franchise Goals Scatter Plot
 
 Finally, we will compare the number of seasons in the league per team to
 the total franchise goals. Here we can see as expected, those with the
 highest number of goals have been in the league the longest. There are a
-few outliers though, specifically MIN and ARI that appear to have a far
-fewer goals than expected for the number of seasons they have been in
-the league.
+few outliers though, specifically DAL, WPG, and ARI that appear to have
+a far fewer goals than expected for the number of seasons they have been
+in the league.
 
 ``` r
-g5 <- ggplot(bar_data, aes(x = seasonsInLeague, y = goalsFor))
+g5 <- ggplot(barData, aes(x = seasonsInLeague, y = goalsFor))
 g5 + geom_point() + 
   labs(x = "Total Seasons in the NHL", y = "Total Franchise Goals",
        title = "Comparing Franchise Goals to Length of Tenure in the NHL") +
-  geom_label_repel(label=finalData$teamAbbrev, fill="lightblue") +
+  geom_label_repel(label=barData$teamAbbrev, fill="lightblue") +
   theme(legend.position = "none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 # Conclusion
 

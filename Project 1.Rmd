@@ -358,10 +358,10 @@ kable(table(goals$division),col.names = c("Division","Count"))
 The last thing we will explore here is historic franchise goals. This will be skewed due to the large variability between seasons in the league, but will be interesting to explore regardless. We will first use a bar plot, followed by a scatter plot to explore this.
 ```{r}
 # Bar chart for goals, subsetting data first
-bar_data <- finalData %>% 
+barData <- finalData %>% 
   select(teamAbbrev, goalsFor, goalsAgainst, seasonsInLeague) %>% 
   arrange(desc(goalsFor))
-g4 <- ggplot(bar_data,aes(x = reorder(teamAbbrev, -goalsFor), y = goalsFor))
+g4 <- ggplot(barData,aes(x = reorder(teamAbbrev, -goalsFor), y = goalsFor))
 g4 + geom_bar(stat="identity", color = "black", fill = "lightblue") +
   theme(axis.text.x = element_text(angle=90,hjust=1,vjust=0.5)) +
   labs(x = "Team", y = "Total Franchise Goals", title = "Total Franchise Goals by Team")
@@ -369,13 +369,13 @@ g4 + geom_bar(stat="identity", color = "black", fill = "lightblue") +
 
 #### Franchise Goals Scatter Plot  
 
-Finally, we will compare the number of seasons in the league per team to the total franchise goals. Here we can see as expected, those with the highest number of goals have been in the league the longest. There are a few outliers though, specifically MIN and ARI that appear to have a far fewer goals than expected for the number of seasons they have been in the league.
+Finally, we will compare the number of seasons in the league per team to the total franchise goals. Here we can see as expected, those with the highest number of goals have been in the league the longest. There are a few outliers though, specifically DAL, WPG, and ARI that appear to have a far fewer goals than expected for the number of seasons they have been in the league.
 ```{r, warning=F}
-g5 <- ggplot(bar_data, aes(x = seasonsInLeague, y = goalsFor))
+g5 <- ggplot(barData, aes(x = seasonsInLeague, y = goalsFor))
 g5 + geom_point() + 
   labs(x = "Total Seasons in the NHL", y = "Total Franchise Goals",
        title = "Comparing Franchise Goals to Length of Tenure in the NHL") +
-  geom_label_repel(label=finalData$teamAbbrev, fill="lightblue") +
+  geom_label_repel(label=barData$teamAbbrev, fill="lightblue") +
   theme(legend.position = "none")
 ```
 
