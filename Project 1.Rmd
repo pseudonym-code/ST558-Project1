@@ -85,7 +85,7 @@ franchiseAPI <- function(extension, ID = NULL){
 Once we have the function, the next step is to put together a mapping from team name to ID number. This allows the user to input the team name without having to know the specific ID. We will use our API call to retrieve this information into a dataframe, that we can then use to complete a mapping in the wrapper function. The user will be able to use the full name, the abbreviation, or just the mascot to pull the ID.
 ```{r team mapping, warning=F,message=F}
 team_mapping <- franchiseAPI("franchise")
-team_mapping <- team_mapping %>% select(!(ends_with("SeasonId") | ends_with("TeamId") | ends_with("PlaceName")))
+team_mapping <- team_mapping %>% select(!(ends_with("SeasonId") | id | ends_with("PlaceName")))
 kable(team_mapping)
 ```
 
@@ -96,18 +96,30 @@ Next we need a function to access the stats API. Though there are many modifiers
 ```{r stats function, warning=F}
 # This function is used to take user input and output a tibble with data from the NHL Stats API
 statsAPI <- function(ID = NULL){
-  base <- "https://statsapi.web.nhl.com/api/v1/teams"
-  end <- "?expand=team.stats"
-  if (!is.null(ID)){
-    URL <- paste0(base,"/ID",end)
+  base <- "https://statsapi.web.nhl.com/api/v1/teams?expand=team.stats"
+  if(!is.null(ID)){
+    URL <- paste0(base,"=",ID)
   } else{
-    URL <- paste0(base,end)
+    URL <- paste0(base)
   }
-
+  
   get_stats <- GET(URL)
   stats_text <- content(get_stats, "text")
-  stats_json <- fromJSON(stats_text, flatten=T)
-  return(tbl_df(stats_json))
+  stats_json <- tbl_df(fromJSON(stats_text, flatten=T))
+  stats_data <- stats_json$teams$teamStats
+  
+  if(!is.null(ID)){
+    stats_data <- stats_json$teams$teamStats[stats_json$teams$id == ID]
+    end_data <- stats_data[[1]]$splits[[1]]
+  } else{
+    end_data <- stats_data[[1]]$splits[[1]]
+    
+    for(i in c(2:length(stats_data))){
+      stats_data <- stats_json$teams$teamStats
+      end_data <- rbind(end_data,stats_data[[i]]$splits[[1]])
+    }
+  }
+  return(tbl_df(end_data))
 }
 ```
 
@@ -115,24 +127,51 @@ statsAPI <- function(ID = NULL){
 Here we create a function that takes in the user input specific to either API.
 ```{r wrapper_function}
 # Allows for one function call to query either API
-access_NHL_API <- function(extension = NULL, ID = NULL, ...){
+access_NHL_API <- function(extension, ID = NULL, ...){
   if(!is.numeric(ID) & !is.null(ID)){
-    if(!is.null(which(team_mapping$fullName == ID))){
+    if(length(which(team_mapping$fullName == ID)) == 0){
       i <- which(team_mapping$fullName == ID)
-    } else if(!is.null(which(team_mapping$teamAbbrev == ID))){
+    } else if(length(which(team_mapping$teamAbbrev == ID)) == 0){
       i <- which(team_mapping$teamAbbrev == ID)
-    } else if(!is.null(which(team_mapping$teamCommonName == ID))){
+    } else if(length(which(team_mapping$teamCommonName == ID)) == 0){
       i <- which(team_mapping$teamAbbrev == ID)
     } else{
       stop("Team ID not found!")
     }
-    ID <- team_mapping$id[i]
   }
   
-  if (is.null(extension)){
+  if (extension == 'stats'){
+    if(!is.null(ID)){
+      ID <- team_mapping$teamAbbrev[i]
+    }
     return(statsAPI(ID))
   } else {
+    if(!is.null(ID)){
+      ID = i
+    }
     return(franchiseAPI(extension,ID))
   }
 }
 ```
+
+# NHL Data Analysis Using Our API
+First we need to pull the data. We will pull franchise data, team totals, and current season stats. We will conduct some filtering here to make the join simpler.
+```{r pull data, warning=F,message=F}
+franchise <- access_NHL_API("franchise") %>% select(!(lastSeasonId | id))
+team_totals <- access_NHL_API("franchise-team-totals") %>% filter(gameTypeId == 2 & activeFranchise == 1 & is.na(lastSeasonId)) %>% select(!(ends_with("SeasonId") | id))
+stats <- access_NHL_API("stats") %>% filter(!is.na(stat.gamesPlayed))
+```
+
+## Combining Data
+Next we need to combine these data together. 
+```{r combine data}
+final_data <- right_join(franchise, team_totals, by = c("mostRecentTeamId" = "teamId")) %>% inner_join(stats, by = c("teamName" = "team.name")) 
+```
+
+
+
+
+
+
+
+
