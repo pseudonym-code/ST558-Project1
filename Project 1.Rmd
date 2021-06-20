@@ -260,7 +260,8 @@ Now that we have our data set with 31 rows and 20 columns, we are ready and able
 ### Summary of Team Age
 It can be interesting to see the spread of current teams and how long they have been in the league. Below we can see that the max is 104 seasons with the minimum being just 4. The average number of seasons in the NHL is just over 50.
 ```{r}
-summary(finalData$seasonsInLeague)
+# Summary table for seasons in league
+kable(as.data.frame(unclass(summary(finalData$seasonsInLeague))),col.names = "Summary")
 ```
 
 #### Histogram of Seasons  
