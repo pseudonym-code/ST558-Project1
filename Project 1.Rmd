@@ -269,7 +269,9 @@ We can further explore this with a histogram.
 ```{r}
 # Histogram of seasons in the league
 g <- ggplot(finalData, aes(x = seasonsInLeague))
-g + geom_histogram(binwidth = 10,color="black",fill="lightblue") + geom_vline(aes(xintercept=mean(seasonsInLeague)),color = "red", linetype="dashed",size = 1)  + labs(x = "Seasons in the NHL",title = "Histogram of the Number of Seasons in the NHL")
+g + geom_histogram(binwidth = 10,color="black",fill="lightblue") +
+  geom_vline(aes(xintercept=mean(seasonsInLeague)),color = "red", linetype="dashed",size = 1)  + 
+  labs(x = "Seasons in the NHL",title = "Histogram of the Number of Seasons in the NHL")
 ```
 
 ### Goal Differentials
