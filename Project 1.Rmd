@@ -110,3 +110,29 @@ statsAPI <- function(ID = NULL){
   return(tbl_df(stats_json))
 }
 ```
+
+## Wrapper Function for Both API Calls
+Here we create a function that takes in the user input specific to either API.
+```{r wrapper_function}
+# Allows for one function call to query either API
+access_NHL_API <- function(extension = NULL, ID = NULL, ...){
+  if(!is.numeric(ID) & !is.null(ID)){
+    if(!is.null(which(team_mapping$fullName == ID))){
+      i <- which(team_mapping$fullName == ID)
+    } else if(!is.null(which(team_mapping$teamAbbrev == ID))){
+      i <- which(team_mapping$teamAbbrev == ID)
+    } else if(!is.null(which(team_mapping$teamCommonName == ID))){
+      i <- which(team_mapping$teamAbbrev == ID)
+    } else{
+      stop("Team ID not found!")
+    }
+    ID <- team_mapping$id[i]
+  }
+  
+  if (is.null(extension)){
+    return(statsAPI(ID))
+  } else {
+    return(franchiseAPI(extension,ID))
+  }
+}
+```
