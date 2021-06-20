@@ -11,23 +11,23 @@ output:
 ---
 
 ```{r setup_project, echo=F, warning=F, message=F}
-library(knitr)
 library(httr)
+library(knitr)
 library(RSQLite)
 library(jsonlite)
 library(rmarkdown)
 library(tidyverse)
 ```
 
-# ST558 - NHL API Vignette
+# NHL API Connection Functions
 
 This is the first project for the course ST558 (Data Science for Statisticians) at NC State University. In this vignette, we will discuss reading data from the National Hockey League (NHL) API, and then providing summaries of the data pulled.
 
 ## Required Project Packages 
 In order to run the code for the project, the required packages, as well as code to install them, are below.
 
-* knitr
 * httr
+* knitr
 * RSQlite
 * jsonlite 
 * tidyverse
@@ -82,6 +82,7 @@ franchiseAPI <- function(extension, ID = NULL){
 }
 ```
 
+### ID Mapping Table
 Once we have the function, the next step is to put together a mapping from team name to ID number. This allows the user to input the team name without having to know the specific ID. We will use our API call to retrieve this information into a dataframe, that we can then use to complete a mapping in the wrapper function. The user will be able to use the full name, the abbreviation, or just the mascot to pull the ID.
 ```{r team mapping, warning=F,message=F}
 team_mapping <- franchiseAPI("franchise")
@@ -168,8 +169,103 @@ Next we need to combine these data together.
 final_data <- right_join(franchise, team_totals, by = c("mostRecentTeamId" = "teamId")) %>% inner_join(stats, by = c("teamName" = "team.name")) 
 ```
 
+## Adding Columns
+In this section we will do some calculations to add a couple columns of interest. We will then filter on columns of interest. Six of the final columns are shown below.
+
+* `seasonsInLeague` - How many seasons the team has been in the league
+* `currentWinPerc` - Win percentage of the current season
+* `currentGoalDiff` - Goal differential (team goals scored - team goals allowed) for current season
+* `histWinPerc` - Historic win percentage
+* `histGoalsPerGame` - Historic goals per game
+* `histGoalDiff` - Historic goal differential
+* `winPercDiff` - Difference between current season win percentage and historic
+* `seasonGoalDiff` - Difference between current goal differential and historic
+* `goalsPerGameDiff` - The difference between the current season goals per game and historic
+
+```{r add col}
+final_data$firstSeason <- as.integer(substr(as.character(final_data$firstSeasonId),1,4))
+final_data <- final_data %>%
+  mutate(
+    seasonsInLeague = 2021 - firstSeason,
+    currentWinPerc = as.integer(stat.wins) / stat.gamesPlayed,
+    currentGoalDiff = as.numeric(stat.goalsPerGame) - as.numeric(stat.goalsAgainstPerGame),
+    histWinPerc = wins / gamesPlayed,
+    histGoalsPerGame = goalsFor / gamesPlayed,
+    histGoalDiff = histGoalsPerGame - (goalsAgainst / gamesPlayed),
+    winPercDiff = currentWinPerc - histWinPerc,
+    seasonGoalDiff = currentGoalDiff - histGoalDiff,
+    goalsPerGameDiff = as.numeric(stat.goalsPerGame) - histGoalsPerGame
+  ) %>% 
+  select(fullName,teamAbbrev,seasonsInLeague, gamesPlayed, goalsFor, goalsAgainst, histGoalsPerGame, histGoalDiff, wins, losses, histWinPerc, stat.wins, stat.losses, currentWinPerc, stat.goalsPerGame, stat.goalsAgainstPerGame, currentGoalDiff, winPercDiff, seasonGoalDiff, goalsPerGameDiff)
+kable(final_data[,1:6])
+```
+
+## Exploratory Data Analysis
+Now that we have our data set with 31 rows and 20 columns, we are able to do exploratory data analysis (EDA).
+```{r}
 
 
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
 
 
 
