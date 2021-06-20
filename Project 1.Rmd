@@ -13,6 +13,7 @@ output:
 ```{r setup_project, echo=F, warning=F, message=F}
 library(httr)
 library(knitr)
+library(ggrepel)
 library(RSQLite)
 library(jsonlite)
 library(rmarkdown)
@@ -28,6 +29,7 @@ In order to run the code for the project, the required packages, as well as code
 
 * httr
 * knitr
+* ggrepel
 * RSQlite
 * jsonlite 
 * tidyverse
@@ -36,7 +38,7 @@ In order to run the code for the project, the required packages, as well as code
 ### Installing required packages
 To install the packages required for this project, use the code chunk below, removing the beginning `#`
 ```{r install}
-#install.packages("knitr", "httr", "RSQlite", "jsonlite", "rmarkdown", "tidyverse")
+#install.packages("knitr", "httr", "ggrepel", "RSQlite", "jsonlite", "rmarkdown", "tidyverse")
 ```
 
 
@@ -238,8 +240,8 @@ In this case, we will just look at the comparison between a team's historic win 
 ```{r}
 kable(final_data %>% select(teamAbbrev, seasonsInLeague, histWinPerc, currentWinPerc, winPercDiff) %>% arrange(desc(winPercDiff)))
 ```
-#### Win Percentages Scatterplot
-We can observe this in a scatterplot as well, using `ggplot2`. Adding the division coloring shows that some of the west division teams are the most successful in the league, at the expense of others in that division falling at the bottom of the spectrum. 
+#### Win Percentages Scatter Plot
+We can observe this in a scatter plot as well, using `ggplot2`. Adding the division coloring shows that some of the west division teams are the most successful in the league, at the expense of others in that division falling at the bottom of the spectrum. 
 ```{r}
 g1 <- ggplot(final_data, aes(x = histWinPerc, y = currentWinPerc, group=division))
 g1 + geom_point(aes(color=division)) + labs(x = "Historic Win Percentage", y = "Current Win Percentage", title = "Comparing Win Percentages") #+ geom_text(label=final_data$teamAbbrev, nudge_x = 0.008, check_overlap = T)
@@ -278,34 +280,21 @@ kable(table(goals$division),col.names = c("Division","Count"))
 ```
 
 ### Total Franchise Goals
+#### Franchise Goals Bar Plot
 The last thing we will explore here is historic franchise goals. This will be skewed due to the large variability between seasons in the league, but will be interesting to explore regardless. We will first use a bar plot, followed by a scatter plot to explore overachievers.
 ```{r}
-g4 <- ggplot(final_data,aes(x = teamAbbrev, y = goalsFor))
-g4 + geom_bar(stat="identity")
+bar_data <- final_data %>% select(teamAbbrev, goalsFor, goalsAgainst, seasonsInLeague) %>% arrange(desc(goalsFor))
+g4 <- ggplot(bar_data,aes(x = reorder(teamAbbrev, -goalsFor), y = goalsFor))
+g4 + geom_bar(stat="identity", color = "black", fill = "lightblue") + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + labs(x = "Team", y = "Total Franchise Goals", title = "Total Franchise Goals by Team")
 
 ```
 
-```{r}
-
-
+#### Franchise Goals Scatter Plot
+Finally, we will compare the number of seasons in the league per team to the total franchise goals. Here we can see as expected, those with the highest number of goals have been in the league the longest. There are a few outliers though, specifically MIN and ARI that appear to have a far fewer goals than expected for the number of seasons they have been in the league.
+```{r, warning=F}
+g5 <- ggplot(bar_data, aes(x = seasonsInLeague, y = goalsFor))
+g5 + geom_point() + labs(x = "Total Seasons in the NHL", y = "Total Franchise Goals", title = "Comparing Franchise Goals to Length of Tenure in the NHL") + geom_label_repel(label=final_data$teamAbbrev, fill="lightblue") + theme(legend.position = "none")
 ```
 
-```{r}
-
-
-```
-
-```{r}
-
-
-```
-
-```{r}
-
-
-```
-
-
-
-
-
+## Conclusion
+This is just the beginning of what can be done with this data. Now that you know how to access this API and write your own functions to do so, you have the NHL at your fingertips! EDA is the beginning of any good data science project, and now we have a good idea behind the data we have collected here. This data can now be used for regression, prediction, any number of things! If you enjoyed this post, stay tuned to my [blog](donym-code.github.io) as I will be posting more projects and tutorials like this one!
