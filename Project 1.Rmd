@@ -55,7 +55,7 @@ And the `ID` option is available for specifying a team.
 
 ```{r franchise function, warning=F}
 # This function is used to take input from the user and return appropriate data from the NHL franchise API
-franchiseAPI <- function(extension, ID = NULL, ...){
+franchiseAPI <- function(extension, ID = NULL){
   base <- "https://records.nhl.com/site/api/"
   
   if(is.null(extension)){
@@ -94,8 +94,8 @@ kable(team_mapping)
 Next we need a function to access the stats API. Though there are many modifiers available to access multiple data sets, for our purposes we will only provide access to the `?expand=team.stats` modifier. By providing an `ID`, it will pull specific team data, but the function alone will pull data on all the teams.
 
 ```{r stats function, warning=F}
-# This function is used to take user input and ouput a tibble with data from the NHL Stats API
-statsAPI <- function(ID=NULL,...){
+# This function is used to take user input and output a tibble with data from the NHL Stats API
+statsAPI <- function(ID = NULL){
   base <- "https://statsapi.web.nhl.com/api/v1/teams"
   end <- "?expand=team.stats"
   if (!is.null(ID)){
